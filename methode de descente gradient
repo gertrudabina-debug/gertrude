@@ -1,0 +1,104 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.stats as st
+import scipy.signal as si
+import time
+
+plt.rcParams['image.interpolation'] = 'nearest'
+plt.rcParams['image.origin'] = 'lower'
+plt.rcParams['image.cmap'] = 'magma_r'
+
+# -----------------------------
+# Génération des données
+# -----------------------------
+a_reel = 0.7
+b_reel = 0.3
+sig_noise = 0.01
+m = 30
+np.random.seed(0)
+x = np.random.uniform(low=0, high=1, size=m)
+y = a_reel * x + b_reel + st.norm.rvs(size=x.size) * sig_noise
+
+dx = np.linspace(0, 1, 100)
+
+plt.plot(x, y, 'o', label='Données')
+plt.plot(dx, a_reel * dx + b_reel, label='Objectif')
+plt.xlabel('Valeurs de $\mathbf{x}$')
+plt.xlabel('Valeurs de $\mathbf{y}$')
+plt.legend()
+plt.grid()
+plt.tight_layout()
+
+# -----------------------------
+# Calcul EQM pour un couple (a,b)
+# -----------------------------
+a = 0.2
+b = 0.4
+som = 0
+y_chap = a * x + b
+tab = []
+
+for i in range(m):
+    som += ((y_chap[i] - y[i])**2)
+    EQM = (1/m) * som
+    tab.append(EQM)
+
+# -----------------------------
+# Carte d’EQM (grille a,b)
+# -----------------------------
+Na = 500
+Nb = 500
+tab_a = np.linspace(-1, 2, Na)
+tab_b = np.linspace(-1, 2, Nb)
+image = np.zeros((Na, Nb))
+
+for i in range(Na):
+    for j in range(Nb):
+        a = tab_a[i]
+        b = tab_b[j]
+        y_chap = a * x + b
+        image[i, j] = sum((y_chap - y)**2) / m
+
+print(image)
+
+plt.figure(figsize=(5, 5))
+plt.imshow(image.T, vmin=0, vmax=0.5, extent=[-1, 2, -1, 2])
+plt.plot(a_reel, b_reel, '*')
+plt.xlabel('a')
+plt.ylabel('b')
+plt.colorbar()
+
+# -----------------------------
+# Descente de gradient
+# -----------------------------
+a_crt = 2
+b_crt = 2
+eta = 0.5
+fois = 30
+
+tab_a_crt = np.zeros(fois)
+tab_b_crt = np.zeros(fois)
+tab_a_crt[0] = a_crt
+tab_b_crt[0] = b_crt
+
+for i in range(fois):
+    y_chap = a_crt * x + b_crt
+    dCpara = (2/m) * (sum(x * (y_chap - y)))
+    dCparb = 2/m * np.sum(y_chap - y)
+
+    a_crt = a_crt - eta * dCpara
+    b_crt = b_crt - eta * dCparb
+
+    tab_a_crt[i] = a_crt
+    tab_b_crt[i] = b_crt
+
+# -----------------------------
+# Affichage de la trajectoire
+# -----------------------------
+plt.figure(figsize=(9, 9))
+plt.imshow(image.T, vmin=0, vmax=0.5, extent=[-1, 2, -1, 2])
+plt.plot(a_reel, b_reel, '*')
+plt.xlabel('a')
+plt.ylabel('b')
+plt.colorbar()
+plt.plot(tab_a_crt, tab_b_crt, '.-r')
