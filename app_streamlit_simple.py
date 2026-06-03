@@ -136,7 +136,7 @@ with st.spinner("Mise à jour..."):
         tab_b_crt[i] = b_crt
         eqm_history.append(sum((y_chap - y)**2) / m)
 
-    fig, axes = plt.subplots(2, 2, figsize=(14, 7))
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle("Descente de Gradient - Vue d'ensemble", fontsize=16, fontweight='bold')
 
     axes[0, 0].plot(x, y, 'o', label='Données')
@@ -208,7 +208,7 @@ zip_buffer, timestamp = créer_zip(
 )
 
 st.download_button(
-    label="💾 Télécharger tout (ZIP)",
+    label="💾 Télécharger les données de calculs  (ZIP)",
     data=zip_buffer,
     file_name=f"gradient_{timestamp}.zip",
     mime="application/zip",
