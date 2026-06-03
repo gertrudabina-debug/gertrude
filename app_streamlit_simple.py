@@ -224,7 +224,7 @@ if st.session_state.get("calcul_done"):
     )
 
     st.download_button(
-        label="💾 Télécharger tout (ZIP)",
+        label="💾 Télécharger les données de calcul (ZIP)",
         data=zip_buffer,
         file_name=f"gradient_{timestamp}.zip",
         mime="application/zip",
