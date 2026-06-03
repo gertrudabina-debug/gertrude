@@ -81,16 +81,16 @@ st.markdown("Application interactive de descente de gradient")
 st.sidebar.title("⚙️ Paramètres")
 
 st.sidebar.subheader("🎲 Génération des données")
-a_reel    = st.sidebar.number_input("a réel",           min_value=0.0,   max_value=2.0,  value=0.7,  step=0.01)
-b_reel    = st.sidebar.number_input("b réel",           min_value=0.0,   max_value=1.0,  value=0.3,  step=0.01)
-sig_noise = st.sidebar.number_input("Bruit (σ)",        min_value=0.001, max_value=0.1,  value=0.01, step=0.001, format="%.3f")
-m         = st.sidebar.number_input("Nombre de points", min_value=10,    max_value=100,  value=30,   step=1)
+a_reel    = st.sidebar.number_input("a réel [0 – 2]",         min_value=0.0,    max_value=2.0,  value=0.7,  step=0.01)
+b_reel    = st.sidebar.number_input("b réel [0 – 1]",         min_value=0.0,    max_value=1.0,  value=0.3,  step=0.01)
+sig_noise = st.sidebar.number_input("Bruit σ [> 0]",          min_value=0.0001, max_value=None, value=0.01, step=0.001, format="%.4f")
+m         = st.sidebar.number_input("Nombre de points [≥ 2]", min_value=2,      max_value=None, value=30,   step=1)
 
 st.sidebar.subheader("🔬 Descente de gradient")
-a_init = st.sidebar.number_input("a initial",                min_value=-2.0, max_value=2.0, value=2.0, step=0.01)
-b_init = st.sidebar.number_input("b initial",                min_value=-2.0, max_value=2.0, value=2.0, step=0.01)
-eta    = st.sidebar.number_input("Taux d'apprentissage (η)", min_value=0.01, max_value=1.0, value=0.5, step=0.01)
-fois   = st.sidebar.number_input("Itérations",               min_value=10,   max_value=100, value=30,  step=1)
+a_init = st.sidebar.number_input("a initial [-2 – 2]",    min_value=-2.0,  max_value=2.0,  value=2.0, step=0.01)
+b_init = st.sidebar.number_input("b initial [-2 – 2]",    min_value=-2.0,  max_value=2.0,  value=2.0, step=0.01)
+eta    = st.sidebar.number_input("Taux η [0.01 – 1]",     min_value=0.01,  max_value=1.0,  value=0.5, step=0.01)
+fois   = st.sidebar.number_input("Itérations [≥ 1]",      min_value=1,     max_value=None, value=30,  step=1)
 
 m    = int(m)
 fois = int(fois)
@@ -132,14 +132,17 @@ if st.sidebar.button("🚀 Lancer les calculs"):
         fig, axes = plt.subplots(2, 2, figsize=(14, 10))
         fig.suptitle("Descente de Gradient - Vue d'ensemble", fontsize=16, fontweight='bold')
 
+        # --- Figure 1 : Données + droite réelle + droite finale ---
         axes[0, 0].plot(x, y, 'o', label='Données')
-        axes[0, 0].plot(dx, a_reel * dx + b_reel, label='Objectif')
+        axes[0, 0].plot(dx, a_reel * dx + b_reel, label=f'Objectif (a={a_reel}, b={b_reel})')
+        axes[0, 0].plot(dx, a_crt * dx + b_crt, '--', color='red', label=f'Final (a={a_crt:.3f}, b={b_crt:.3f})')
         axes[0, 0].set_xlabel('Valeurs de x')
         axes[0, 0].set_ylabel('Valeurs de y')
         axes[0, 0].legend()
         axes[0, 0].grid()
         axes[0, 0].set_title('Données générées')
 
+        # --- Figure 2 : Carte EQM ---
         im2 = axes[0, 1].imshow(image.T, vmin=0, vmax=0.5, extent=[-1, 2, -1, 2], aspect='auto')
         axes[0, 1].plot(a_reel, b_reel, '*', markersize=15, label='Valeurs réelles')
         axes[0, 1].set_xlabel('a')
@@ -148,6 +151,7 @@ if st.sidebar.button("🚀 Lancer les calculs"):
         axes[0, 1].legend()
         axes[0, 1].set_title("Carte d'EQM")
 
+        # --- Figure 3 : Trajectoire ---
         im3 = axes[1, 0].imshow(image.T, vmin=0, vmax=0.5, extent=[-1, 2, -1, 2], aspect='auto')
         axes[1, 0].plot(a_reel, b_reel, '*', markersize=15, label='Valeurs réelles')
         axes[1, 0].plot(a_init, b_init, 'go', markersize=10, label='Point de départ')
@@ -159,6 +163,7 @@ if st.sidebar.button("🚀 Lancer les calculs"):
         axes[1, 0].legend()
         axes[1, 0].set_title('Descente de Gradient')
 
+        # --- Figure 4 : Évolution EQM ---
         axes[1, 1].plot(eqm_history, 'b-', linewidth=2)
         axes[1, 1].set_xlabel('Itération')
         axes[1, 1].set_ylabel('EQM')
@@ -224,7 +229,7 @@ if st.session_state.get("calcul_done"):
     )
 
     st.download_button(
-        label="💾 Télécharger les données de calcul (ZIP)",
+        label="💾 Télécharger tout (ZIP)",
         data=zip_buffer,
         file_name=f"gradient_{timestamp}.zip",
         mime="application/zip",
